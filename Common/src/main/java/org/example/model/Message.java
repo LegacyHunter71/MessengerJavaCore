@@ -7,9 +7,12 @@ public class Message {
     private String text;
     private String author;
     private String recipient;
-    private LocalDate date;
+    private String date;
 
-    public Message(String text, String author, String recipient, LocalDate date) {
+    public Message() {
+    }
+
+    public Message(String text, String author, String recipient, String date) {
         this.text = text;
         this.author = author;
         this.recipient = recipient;
@@ -40,11 +43,11 @@ public class Message {
         this.recipient = recipient;
     }
 
-    public LocalDate getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

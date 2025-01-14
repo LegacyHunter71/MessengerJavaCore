@@ -8,6 +8,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -42,16 +43,14 @@ public class FileManager {
     public static List<Message> readMessagesFromCsv() {
         List<Message> messages = new ArrayList<>();
         String line;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(Message.class.getClassLoader().getResourceAsStream(MESSAGES_FILE_NAME))))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(MESSAGES_FILE_NAME))) {
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
                 if (values.length == 4) {
-                    String text = values[0];
-                    String author = values[1];
-                    String recipient = values[2];
-                    LocalDate date = LocalDate.parse(values[3], formatter);
+                    String author = values[0];
+                    String recipient = values[1];
+                    String text = values[2];
+                    String date = values[3];
                     messages.add(new Message(text, author, recipient, date));
                 }
             }
@@ -61,18 +60,21 @@ public class FileManager {
         return messages;
     }
 
-    public static void appendMessageToCsv(Message message) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(MESSAGES_FILE_NAME, true))) {
-            bw.write(message.getText() + "," + message.getAuthor() + "," + message.getRecipient() + "," + message.getDate());
+
+    public static void appendUserToCsv(User user) {
+        System.out.println("appendUserToCsv: " + user.toString());
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(USERS_FILE_NAME, true))) {
+            bw.write(user.getLogin() + "," + user.getPassword() + "," + user.getUserType());
             bw.newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public static void appendUserToCsv(User user) {
-        System.out.println("appendUserToCsv: " + user.toString());
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(USERS_FILE_NAME, true))) {
-            bw.write(user.getLogin() + "," + user.getPassword() + "," + user.getUserType());
+
+    public static void appendMessageToCsv(Message message) {
+        System.out.println("appendMessageToCsv: " + message.toString());
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(MESSAGES_FILE_NAME, true))) {
+            bw.write(message.getAuthor() + "," + message.getRecipient() + "," + message.getText() + "," + message.getDate());
             bw.newLine();
         } catch (IOException e) {
             e.printStackTrace();
@@ -147,5 +149,43 @@ public class FileManager {
             e.printStackTrace();
         }
     }
+
+    public static void deleteMessagesByRecipient(String recipient) {
+        List<String> lines = new ArrayList<>();
+        String line;
+
+        // Odczytanie wiadomości z pliku CSV i filtrowanie tych, które nie są dla podanego odbiorcy
+        try (BufferedReader br = new BufferedReader(new FileReader(MESSAGES_FILE_NAME))) {
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                if (values.length == 4) {
+                    System.out.println("Checking message for recipient: " + values[2]);
+                    if (!values[1].equals(recipient)) {
+                        lines.add(line);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Zapisanie przefiltrowanych wiadomości do tymczasowego pliku
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(TEMP_FILE_NAME))) {
+            for (String l : lines) {
+                bw.write(l);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Zamiana oryginalnego pliku wiadomości na tymczasowy plik
+        try {
+            Files.move(Paths.get(TEMP_FILE_NAME), Paths.get(MESSAGES_FILE_NAME), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
