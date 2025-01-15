@@ -1,7 +1,6 @@
 package org.example;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import org.example.model.Message;
 import org.example.model.Response;
 import org.example.model.User;
@@ -94,11 +93,11 @@ public class Server {
                                 String text = gson.fromJson(jsonText, String.class);
                                 List<User> allUsers = FileManager.readUsersFromCsv();
                                 Object data = response.getData();
-                                User author = null;
                                 if (data instanceof User) {
-                                    author = (User) data;
-                                }
-                                if (author != null) {
+                                    final User author = (User) data;
+                                    allUsers = allUsers.stream()
+                                            .filter(user -> !user.getLogin().equals(author.getLogin()))
+                                            .toList();
                                     for (User user : allUsers) {
                                         Message message = new Message();
                                         message.setRecipient(user.getLogin());
@@ -202,6 +201,7 @@ public class Server {
 
         }
     }
+
     public static List<Message> getMessagesByRecipient(List<Message> messages, String recipient) {
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
@@ -211,7 +211,6 @@ public class Server {
         }
         return filteredMessages;
     }
-
 
 
     public static Optional<User> findUserByLogin(List<User> users, String login) {

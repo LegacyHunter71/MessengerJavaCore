@@ -121,7 +121,7 @@ public class Client {
                             }
                             break;
                         }
-                        case "SendMessageAll":{
+                        case "SendMessageAll": {
                             System.out.println("PODAJ TREŚĆ :");
                             String text = br.readLine();
                             dout.writeUTF(gson.toJson(text));
@@ -200,7 +200,7 @@ public class Client {
                     }
                 } while (!command.equals("Exit"));
             }
-            } catch (UnknownHostException ex) {
+        } catch (UnknownHostException ex) {
             throw new RuntimeException(ex);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
