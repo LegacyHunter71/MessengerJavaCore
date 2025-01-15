@@ -1,6 +1,7 @@
 package org.example;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import org.example.model.Message;
 import org.example.model.Response;
 import org.example.model.User;
@@ -11,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -87,6 +89,30 @@ public class Server {
                                 FileManager.deleteMessagesByRecipient(userLogin);
                                 break;
                             }
+                            case "SendMessageAll": {
+                                String jsonText = din.readUTF();
+                                String text = gson.fromJson(jsonText, String.class);
+                                List<User> allUsers = FileManager.readUsersFromCsv();
+                                Object data = response.getData();
+                                User author = null;
+                                if (data instanceof User) {
+                                    author = (User) data;
+                                }
+                                if (author != null) {
+                                    for (User user : allUsers) {
+                                        Message message = new Message();
+                                        message.setRecipient(user.getLogin());
+                                        message.setText(text);
+                                        message.setDate(LocalDate.now().toString());
+                                        message.setAuthor(author.getLogin());
+                                        FileManager.appendMessageToCsv(message);
+                                    }
+                                } else {
+                                    System.out.println("Autor wiadomości nie został zidentyfikowany.");
+                                }
+                                break;
+                            }
+
                             case "Exit": {
                                 System.out.println("Closing connection...");
                                 break;
@@ -111,13 +137,55 @@ public class Server {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println("jeste userem");
                 String command = "";
                 do {
-                    // Implementacja dla użytkownika
-                } while (!command.equals("exit"));
+                    try {
+                        command = gson.fromJson(din.readUTF(), String.class);
+                        switch (command) {
+                            case "GetUsersList": {
+                                List<User> allUsers = FileManager.readUsersFromCsv();
+                                dout.writeUTF(gson.toJson(allUsers));
+                                break;
+                            }
+                            case "SendMessage": {
+                                Message message = gson.fromJson(din.readUTF(), Message.class);
+                                FileManager.appendMessageToCsv(message);
+                                break;
+                            }
+                            case "ReadMessage": {
+                                try {
+                                    String userLoginJson = din.readUTF();
+                                    String userLogin = gson.fromJson(userLoginJson, String.class);
+                                    List<Message> messages = FileManager.readMessagesFromCsv();
+                                    List<Message> result = getMessagesByRecipient(messages, userLogin);
+                                    dout.writeUTF(gson.toJson(result));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    System.out.println("Error reading message: " + e.getMessage());
+                                }
+                                break;
+                            }
+                            case "DeleteMessages": {
+                                String userLoginJson = din.readUTF();
+                                String userLogin = gson.fromJson(userLoginJson, String.class);
+                                FileManager.deleteMessagesByRecipient(userLogin);
+                                break;
+                            }
+                            case "Exit": {
+                                System.out.println("Closing connection...");
+                                break;
+                            }
+                            default: {
+                                System.out.println("Unknown command: " + command);
+                                break;
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Error processing command: " + e.getMessage());
+                    }
+                } while (!command.equals("Exit"));
 
-                // Zamknięcie zasobów po zakończeniu pętli
                 try {
                     if (din != null) din.close();
                     if (dout != null) dout.close();
@@ -126,9 +194,6 @@ public class Server {
                     e.printStackTrace();
                 }
             }
-
-
-
 
         } catch (IOException e) {
             e.printStackTrace();

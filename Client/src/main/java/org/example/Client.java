@@ -82,7 +82,81 @@ public class Client {
                             } else {
                                 System.out.println("Data is not of type User or LinkedTreeMap: " + data);
                             }
-                            System.out.println(data);
+                            break;
+                        }
+                        case "ReadMessage": {
+                            Object data = response.getData();
+                            if (data instanceof LinkedTreeMap) {
+                                String json = gson.toJson(data);
+                                User user = gson.fromJson(json, User.class);
+                                dout.writeUTF(gson.toJson(user.getLogin()));
+                            } else if (data instanceof User) {
+                                User user = (User) data;
+                                dout.writeUTF(gson.toJson(user.getLogin()));
+                            } else {
+                                System.out.println("Data is not of type User or LinkedTreeMap: " + data);
+                            }
+                            String json = din.readUTF();
+                            Type messageList = new TypeToken<List<Message>>() {
+                            }.getType();
+                            List<Message> messages = gson.fromJson(json, messageList);
+                            if (messages.size() == 0) {
+                                System.out.println("BRAK WIADOMOŚCI");
+                            } else {
+                                showMessages(messages);
+                            }
+                            break;
+                        }
+                        case "DeleteMessages": {
+                            Object data = response.getData();
+                            if (data instanceof LinkedTreeMap) {
+                                String json = gson.toJson(data);
+                                User user = gson.fromJson(json, User.class);
+                                dout.writeUTF(gson.toJson(user.getLogin()));
+                            } else if (data instanceof User) {
+                                User user = (User) data;
+                                dout.writeUTF(gson.toJson(user.getLogin()));
+                            } else {
+                                System.out.println("Data is not of type User or LinkedTreeMap: " + data);
+                            }
+                            break;
+                        }
+                        case "SendMessageAll":{
+                            System.out.println("PODAJ TREŚĆ :");
+                            String text = br.readLine();
+                            dout.writeUTF(gson.toJson(text));
+                        }
+                    }
+                } while (!command.equals("Exit"));
+            } else {
+                do {
+                    getAdminMenu();
+                    command = br.readLine();
+                    dout.writeUTF(gson.toJson(command));
+                    switch (command) {
+
+                        case "GetUsadminersList": {
+                            String json = din.readUTF();
+                            Type userListType = new TypeToken<List<User>>() {
+                            }.getType();
+                            List<User> users = gson.fromJson(json, userListType);
+                            showUsers(users);
+                            break;
+                        }
+                        case "SendMessage": {
+                            Object data = response.getData();
+                            if (data instanceof LinkedTreeMap) {
+                                String json = gson.toJson(data);
+                                User user = gson.fromJson(json, User.class);
+                                Message message = createMessage(user.getLogin());
+                                dout.writeUTF(gson.toJson(message));
+                            } else if (data instanceof User) {
+                                User user = (User) data;
+                                Message message = createMessage(user.getLogin());
+                                dout.writeUTF(gson.toJson(message));
+                            } else {
+                                System.out.println("Data is not of type User or LinkedTreeMap: " + data);
+                            }
                             break;
                         }
                         case "ReadMessage": {
@@ -125,17 +199,13 @@ public class Client {
                         }
                     }
                 } while (!command.equals("Exit"));
-            } else {
-                System.out.println("jeste userem");
-                do {
-                } while (!command.equals("Exit"));
             }
-
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            } catch (UnknownHostException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
+
     }
 
     private static Message createMessage(String author) {
@@ -193,8 +263,9 @@ public class Client {
         System.out.println("3. GetUsersList");
         System.out.println("4. ReadMessage");
         System.out.println("5. SendMessage");
-        System.out.println("6. DeleteMessages");
-        System.out.println("7. Exit");
+        System.out.println("6. SendMessageAll");
+        System.out.println("7. DeleteMessages");
+        System.out.println("8. Exit");
     }
 
     private static void getUserMenu() {
