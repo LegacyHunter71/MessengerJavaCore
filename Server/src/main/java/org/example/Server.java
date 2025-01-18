@@ -129,9 +129,9 @@ public class Server {
 
                 // Zamknięcie zasobów po zakończeniu pętli
                 try {
-                    if (din != null) din.close();
-                    if (dout != null) dout.close();
-                    if (s != null) s.close();
+                    din.close();
+                    dout.close();
+                    s.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -186,9 +186,9 @@ public class Server {
                 } while (!command.equals("Exit"));
 
                 try {
-                    if (din != null) din.close();
-                    if (dout != null) dout.close();
-                    if (s != null) s.close();
+                    din.close();
+                    dout.close();
+                    s.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -202,7 +202,7 @@ public class Server {
         }
     }
 
-    public static List<Message> getMessagesByRecipient(List<Message> messages, String recipient) {
+    private static List<Message> getMessagesByRecipient(List<Message> messages, String recipient) {
         List<Message> filteredMessages = new ArrayList<>();
         for (Message message : messages) {
             if (message.getRecipient().equals(recipient)) {
@@ -213,7 +213,7 @@ public class Server {
     }
 
 
-    public static Optional<User> findUserByLogin(List<User> users, String login) {
+    private static Optional<User> findUserByLogin(List<User> users, String login) {
         return users.stream()
                 .filter(user -> user.getLogin().equals(login))
                 .findFirst();

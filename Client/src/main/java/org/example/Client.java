@@ -54,7 +54,7 @@ public class Client {
                             dout.writeUTF(gson.toJson(user));
                             break;
                         }
-                        case "GetUsadminersList": {
+                        case "GetUsersList": {
                             String json = din.readUTF();
                             Type userListType = new TypeToken<List<User>>() {
                             }.getType();
@@ -135,7 +135,7 @@ public class Client {
                     dout.writeUTF(gson.toJson(command));
                     switch (command) {
 
-                        case "GetUsadminersList": {
+                        case "GetUsersList": {
                             String json = din.readUTF();
                             Type userListType = new TypeToken<List<User>>() {
                             }.getType();

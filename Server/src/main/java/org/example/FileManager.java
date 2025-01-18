@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class FileManager {
 
@@ -20,6 +19,7 @@ public class FileManager {
     private final static String TEMP_FILE_NAME = "temp_users.csv";
 
     public static List<User> readUsersFromCsv() {
+        System.out.println("readUsersFromCsv");
         List<User> users = new ArrayList<>();
         String line;
         try (BufferedReader br = new BufferedReader(new FileReader(USERS_FILE_NAME))) {
@@ -39,6 +39,7 @@ public class FileManager {
     }
 
     public static List<Message> readMessagesFromCsv() {
+        System.out.println("readMessagesFromCsv");
         List<Message> messages = new ArrayList<>();
         String line;
         try (BufferedReader br = new BufferedReader(new FileReader(MESSAGES_FILE_NAME))) {
@@ -79,42 +80,8 @@ public class FileManager {
         }
     }
 
-    public static void addOrUpdateUserInCsv(User updatedUser) {
-        List<String> lines = new ArrayList<>();
-        String line;
-        boolean userUpdated = false;
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(FileManager.class.getClassLoader().getResourceAsStream(USERS_FILE_NAME))))) {
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                if (values.length == 3 && values[0].equals(updatedUser.getLogin())) {
-                    lines.add(updatedUser.getLogin() + "," + updatedUser.getPassword() + "," + updatedUser.getUserType());
-                    userUpdated = true;
-                } else {
-                    lines.add(line);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (!userUpdated) {
-            lines.add(updatedUser.getLogin() + "," + updatedUser.getPassword() + "," + updatedUser.getUserType());
-        }
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(Objects.requireNonNull(
-                FileManager.class.getClassLoader().getResource(USERS_FILE_NAME)).getFile()))) {
-            for (String l : lines) {
-                bw.write(l);
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void deleteUserFromCsv(String login) {
+        System.out.println("deleteUserFromCsv: " + login);
         List<String> lines = new ArrayList<>();
         String line;
 
@@ -149,6 +116,7 @@ public class FileManager {
     }
 
     public static void deleteMessagesByRecipient(String recipient) {
+        System.out.println("deleteMessagesByRecipient: " + recipient);
         List<String> lines = new ArrayList<>();
         String line;
 
