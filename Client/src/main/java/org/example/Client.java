@@ -130,7 +130,7 @@ public class Client {
                 } while (!command.equals("Exit"));
             } else {
                 do {
-                    getAdminMenu();
+                    getUserMenu();
                     command = br.readLine();
                     dout.writeUTF(gson.toJson(command));
                     switch (command) {
@@ -273,6 +273,7 @@ public class Client {
         System.out.println("1. ReadMessage");
         System.out.println("2. SendMessage");
         System.out.println("3. DeleteMessages");
-        System.out.println("4. Exit");
+        System.out.println("4. GetUsersList");
+        System.out.println("5. Exit");
     }
 }
